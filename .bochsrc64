@@ -2,7 +2,7 @@
 plugin_ctrl: unmapped=1, biosdev=1, speaker=1, extfpuirq=1, parallel=1, serial=1
 config_interface: textconfig
 display_library: x
-memory: host=32, guest=3584
+memory: host=128, guest=8192
 romimage: file="/home/adam/workspace/bochs-2.6.11/bios/BIOS-bochs-latest", address=0x0, options=none
 vgaromimage: file="/home/adam/workspace/bochs-2.6.11/bios/VGABIOS-lgpl-latest"
 boot: cdrom
@@ -10,7 +10,7 @@ floppy_bootsig_check: disabled=0
 # no floppya
 # no floppyb
 ata0: enabled=1, ioaddr1=0x1f0, ioaddr2=0x3f0, irq=14
-ata0-master: type=cdrom, path="img/x86-pc.iso", status=inserted, model="Generic 1234", biosdetect=auto
+ata0-master: type=cdrom, path="img/x86_64-pc.iso", status=inserted, model="Generic 1234", biosdetect=auto
 ata0-slave: type=none
 ata1: enabled=1, ioaddr1=0x170, ioaddr2=0x370, irq=15
 ata1-master: type=none
@@ -40,8 +40,11 @@ clock: sync=none, time0=local, rtc_sync=0
 # no loader
 log: bochs.log
 logprefix: %t%e%d
-#debug: action=ignore
-debug: action=ignore, cpu1=report
+debug: action=ignore
+#debug: action=ignore,apic0=report,cpu0=report
+#debug: action=ignore,apic0=report,cpu0=report,apic1=report,cpu1=report,apic2=report,cpu2=report,apic3=report,cpu3=report
+#debug: action=report
+#debug: action=ignore,cpu0=report
 info: action=report
 error: action=report
 panic: action=ask

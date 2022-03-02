@@ -1,0 +1,53 @@
+#####################################################################################################################
+##
+##  Tuprules.tup -- These are the variables and macros needed to build century-os
+##
+##        Copyright (c)  2022 -- Adam Clark
+##        Licensed under "THE BEER-WARE LICENSE"
+##        See License.md for details.
+##
+## -----------------------------------------------------------------------------------------------------------------
+##
+##     Date      Tracker  Version  Pgmr  Description
+##  -----------  -------  -------  ----  ---------------------------------------------------------------------------
+##  2022-Feb-25  Initial  v0.0.0   ADCL  Initial version
+##
+#####################################################################################################################
+
+
+##
+## -- include the current working directory
+##    -------------------------------------
+include TupRules.inc
+
+include $(WS)/arch/$(ARCH)/Tupfile.inc
+#include $(WS)/platform/$(PLAT)/Tupfile.inc
+
+
+##
+## -- Build out the LDFLAGS variable -- for ld (through g++)
+##    ------------------------------------------------------
+LDFLAGS += -z max-page-size=0x1000
+LDFLAGS += -L $(WS)/lib/$(ARCH)
+LDFLAGS += -nostdlib
+LDFLAGS += -g
+LDFLAGS += -O2
+
+
+##
+## -- Build out the CFLAGS variable for g++
+##    -------------------------------------
+CFLAGS += -ffreestanding
+CFLAGS += -nostdlib
+CFLAGS += -nostdinc
+CFLAGS += -fno-builtin
+CFLAGS += -fno-unwind-tables
+CFLAGS += -fno-exceptions
+CFLAGS += -O2
+CFLAGS += -g
+CFLAGS += -Werror
+CFLAGS += -Wall
+CFLAGS += -c
+CFLAGS += -DCURRENT_YEAR=$(CURRENT_YEAR)
+
+

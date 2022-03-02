@@ -33,7 +33,7 @@ all: init
 ## -- This rule will make sure that up is initialized and that we have created all the proper variants
 ##    ------------------------------------------------------------------------------------------------
 .PHONY: init
-init: TupRules.inc
+init: TupRules.inc .doxygen
 	if [ ! -f .tup/db ]; then `tup init`; fi;
 	tup compiledb
 	doxygen .doxygen
@@ -65,8 +65,9 @@ x86_64-pc: init
 	rm -fR img/x86_64-pc.iso
 	rm -fR sysroot/x86_64-pc/*
 	mkdir -p sysroot/x86_64-pc img
-	cp -fR targets/x86_64-pc/bin/* sysroot/x86_64-pc/
+	cp -fR targets/x86_64-pc/* sysroot/x86_64-pc/
 	find sysroot/x86_64-pc -type f -name Tupfile -delete
+	find sysroot/x86_64-pc -type f -name '*.map' -delete
 	grub2-mkrescue -o img/x86_64-pc.iso sysroot/x86_64-pc
 
 

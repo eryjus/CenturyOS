@@ -1,0 +1,53 @@
+#####################################################################################################################
+##
+##  Tupfile -- An alternative to 'make` build system -- build the object files for the kernel
+##
+##        Copyright (c)  2017-2022 -- Adam Clark
+##        Licensed under "THE BEER-WARE LICENSE"
+##        See License.md for details.
+##
+##  This file sets up the build environment for the x86_64-pc build.
+##
+## -----------------------------------------------------------------------------------------------------------------
+##
+##     Date      Tracker  Version  Pgmr  Description
+##  -----------  -------  -------  ----  ---------------------------------------------------------------------------
+##  2021-Jan-02  Initial  v0.0.1   ADCL  Initial version
+##
+#####################################################################################################################
+
+
+##
+## -- Define the target ARCH and PLATFORM
+##    -----------------------------------
+ARCH=x86_64
+PLAT=pc
+TARGET=$(ARCH)-$(PLAT)
+
+
+##
+## -- Go get some additional information for building the targets
+##    -----------------------------------------------------------
+include_rules
+
+
+##
+## -- Some additional linker flags
+##    ----------------------------
+LDFLAGS += -L $(X86_64_LDFLAGS)
+LDFLAGS += -L $(WS)/targets/$(TARGET)/lib
+LIB += -l gcc
+
+
+
+##
+## -- These are the linker scripts
+##    ----------------------------
+KERNEL_LS=$(WS)/modules/kernel/$(ARCH)/$(TARGET).ld
+
+
+##
+## -- The rules to build the objects
+##    ------------------------------
+: ../../../obj/kernel/$(ARCH)/*.o          | $(KERNEL_LS) $(DEPS)          |> $(LD) -T $(KERNEL_LS) $(LDFLAGS) -o %o %f $(LIB) --print-map > kernel.map;        |> kernel.elf kernel.map
+

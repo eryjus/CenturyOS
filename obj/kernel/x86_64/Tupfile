@@ -1,0 +1,59 @@
+#####################################################################################################################
+##
+##  Tupfile -- An alternative to 'make` build system -- build the object files for the kernel
+##
+##        Copyright (c)  2022 -- Adam Clark
+##        Licensed under "THE BEER-WARE LICENSE"
+##        See License.md for details.
+##
+##  This file sets up the build environment for the x86_64-pc build.
+##
+## -----------------------------------------------------------------------------------------------------------------
+##
+##     Date      Tracker  Version  Pgmr  Description
+##  -----------  -------  -------  ----  ---------------------------------------------------------------------------
+##  2022-Feb-25  Initial  v0.0.0   ADCL  Initial version
+##
+#####################################################################################################################
+
+
+##
+## -- Define the target ARCH and PLATFORM
+##    -----------------------------------
+ARCH=x86_64
+PLAT=pc
+TARGET=$(ARCH)-$(PLAT)
+MODULE=kernel
+
+
+##
+## -- Go get some additional information for building the targets
+##    -----------------------------------------------------------
+include_rules
+
+
+##
+## -- Module-specific include files
+##    -----------------------------
+CFLAGS += -I $(WS)/modules/$(MODULE)/inc
+
+
+
+##
+## -- The rules to build the arch-specific objects
+##    --------------------------------------------
+: foreach  $(WS)/modules/$(MODULE)/$(ARCH)/*.s         | $(SDEPS)          |> !as |>
+: foreach  $(WS)/modules/$(MODULE)/$(ARCH)/*.cc        | $(SDEPS)          |> !cc |>
+
+
+##
+## -- The rules to build the platform-specific objects
+##    ------------------------------------------------
+: foreach  $(WS)/modules/$(MODULE)/$(PLAT)/*.cc        | $(SDEPS)          |> !cc |>
+
+
+##
+## -- The rules to build the general module objects
+##    ---------------------------------------------
+: foreach  $(WS)/modules/$(MODULE)/src/*.cc            | $(SDEPS)          |> !cc |>
+

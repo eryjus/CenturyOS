@@ -1,0 +1,39 @@
+#####################################################################################################################
+##
+##  Tupfile -- An alternative to the 'make' build system -- x86-pc boot/grub files
+##
+##        Copyright (c)  2017-2022 -- Adam Clark
+##
+## ------------------------------------------------------------------------------------------------------------------
+##
+##     Date      Tracker  Version  Pgmr  Description
+##  -----------  -------  -------  ----  ---------------------------------------------------------------------------
+##  2021-Jan-03  Initial  v0.0.1   ADCL  Initial version
+##
+#####################################################################################################################
+
+
+##
+## -- Define the target ARCH and PLATFORM
+##    -----------------------------------
+ARCH=x86_64
+PLAT=pc
+TARGET=$(ARCH)-$(PLAT)
+
+
+##
+## -- Go get some additional information for building the targets
+##    -----------------------------------------------------------
+include_rules
+
+
+#
+# -- Create the grub.cfg file
+#    ------------------------
+: |>    echo "set timeout=3"                                        >  %o;      \
+        echo "set default=0"                                        >> %o;      \
+        echo "menuentry \"CenturyOS\" {"                            >> %o;      \
+        echo "  multiboot2 /boot/kernel.elf"                        >> %o;      \
+        echo "  boot"                                               >> %o;      \
+        echo "}"                                                    >> %o;      \
+|> grub.cfg
