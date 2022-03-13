@@ -30,6 +30,8 @@ SECTIONS {
         *(.mboot)                       /* lead with the multiboot header */
         *(.text.entry)                  /* followed by the code to get the mmu initialized */
         *(.data.entry)                  /* followed by the data needed to initialized */
+        roStart = .;            LONG(_roStart);
+        kernelEnd = .;          LONG(_textEnd);
 
         *(.bss.entry)                   /* the stack for the first function call */
         . = ALIGN(4096);
@@ -46,6 +48,8 @@ SECTIONS {
         _textStart = .;
         *(.init)
         *(.text .text.* .stub .gnu.linkonce.t.*)
+        . = ALIGN(4096);
+        _roStart = .;
         *(.rodata .rodata.* .gnu.linkonce.r.*)
         . = ALIGN(4096);
 
@@ -93,5 +97,19 @@ SECTIONS {
         . = ALIGN(4096);
         _stabEnd = .;
         _kernelEnd = .;
+    }
+
+
+    .symtab : {
+        *(.symtab)
+    }
+
+    .strtab : {
+        *(.shstrtab)
+        *(.strtab)
+    }
+
+    /DISCARD/ : {
+        *(.comment*)
     }
 }

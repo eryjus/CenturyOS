@@ -27,6 +27,7 @@
 #include "internals.h"
 
 
+
 //
 // -- Several flags
 //    -------------
@@ -49,11 +50,13 @@ enum {
 typedef char *va_list;
 
 
+
 /****************************************************************************************************************//**
 *   @def                va_start()
 *   @brief              Start a variable argument list
 *///-----------------------------------------------------------------------------------------------------------------
 #define va_start()      (curParm = 1)
+
 
 
 /****************************************************************************************************************//**
@@ -63,6 +66,7 @@ typedef char *va_list;
 *   @note               This macro has the side-effect of advancing the argument to the next
 *///-----------------------------------------------------------------------------------------------------------------
 #define va_arg(t)       (*(t *)&p[curParm ++])
+
 
 
 /****************************************************************************************************************//**
@@ -77,19 +81,24 @@ typedef char *va_list;
 *   @var                digits
 *   @brief              A list of lower-case hexidecimal numbers (extended to the end of the alphabet)
 *///-----------------------------------------------------------------------------------------------------------------
+KERNEL_RODATA
 static const char *digits = "0123456789abcdefghijklmnopqrstuvwxyz";
+
 
 
 /****************************************************************************************************************//**
 *   @var                upper_digits
 *   @brief              A list of upper-case hexidecimal numbers (extended to the end of the alphabet)
 *///-----------------------------------------------------------------------------------------------------------------
+KERNEL_RODATA
 static const char *upper_digits = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
 
 
 /********************************************************************************************************************
 *   See `internals.h` for documentation
 *///-----------------------------------------------------------------------------------------------------------------
+KRN_FUNC
 int DbgPrintf(const char *fmt, ...)
 {
     uint8_t pCnt;
@@ -449,6 +458,8 @@ int DbgPrintf(const char *fmt, ...)
 
     return printed;
 }
+
+
 
 #undef va_start
 #undef va_arg

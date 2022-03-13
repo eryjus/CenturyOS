@@ -18,11 +18,14 @@
 *///=================================================================================================================
 
 
+
 #ifndef __SERIAL_H__
 #define __SERIAL_H__
 
 
+
 #include "arch.h"
+
 
 
 /****************************************************************************************************************//**
@@ -31,7 +34,8 @@
 *
 *   Open the serial port as "115200-n-8-1"
 *///-----------------------------------------------------------------------------------------------------------------
-extern "C" void SerialOpen(void);
+KRN_FUNC
+void SerialOpen(void);
 
 
 
@@ -43,7 +47,8 @@ extern "C" void SerialOpen(void);
 *
 *   Write a character to the serial port.
 *///-----------------------------------------------------------------------------------------------------------------
-extern "C" void SerialPutChar(uint8_t ch);
+KRN_FUNC
+void SerialPutChar(uint8_t ch);
 
 
 
@@ -55,7 +60,8 @@ extern "C" void SerialPutChar(uint8_t ch);
 *
 *   Write a string of characters to the serial port.
 *///-----------------------------------------------------------------------------------------------------------------
-extern "C" void SerialPutString(const char *s);
+KRN_FUNC
+void SerialPutString(const char *s);
 
 
 
@@ -67,7 +73,8 @@ extern "C" void SerialPutString(const char *s);
 *
 *   Write a 64-bit hexidecimal number to the serial port, breaking it up into words.
 *///-----------------------------------------------------------------------------------------------------------------
-extern "C" void SerialPutHex64(uint64_t h);
+KRN_FUNC
+void SerialPutHex64(uint64_t h);
 
 
 
@@ -79,7 +86,8 @@ extern "C" void SerialPutHex64(uint64_t h);
 *
 *   Write a 32-bit hexidecimal number to the serial port, breaking it up into words.
 *///-----------------------------------------------------------------------------------------------------------------
-extern "C" void SerialPutHex32(uint32_t h);
+KRN_FUNC
+void SerialPutHex32(uint32_t h);
 
 
 #endif

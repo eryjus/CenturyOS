@@ -2,7 +2,7 @@
 ##
 ##  Tupfile -- An alternative to 'make` build system -- build the object files for the kernel
 ##
-##        Copyright (c)  2017-2022 -- Adam Clark
+##        Copyright (c)  2022 -- Adam Clark
 ##        Licensed under "THE BEER-WARE LICENSE"
 ##        See License.md for details.
 ##
@@ -49,5 +49,5 @@ KERNEL_LS=$(WS)/modules/kernel/$(ARCH)/$(TARGET).ld
 ##
 ## -- The rules to build the objects
 ##    ------------------------------
-: ../../../obj/kernel/$(ARCH)/*.o          | $(KERNEL_LS) $(DEPS)          |> $(LD) -T $(KERNEL_LS) $(LDFLAGS) -o %o %f $(LIB) --print-map > kernel.map;        |> kernel.elf kernel.map
+: ../../../obj/kernel/$(TARGET)/*.o          | $(KERNEL_LS) $(DEPS)          |> $(LD) -T $(KERNEL_LS) $(LDFLAGS) -o %o %f $(LIB) --print-map > kernel.map;        |> kernel.elf kernel.map
 

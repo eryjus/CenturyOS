@@ -1,6 +1,6 @@
 ***Century OS License***
 
-*Copyright (c)  2017-2022 -- Adam Clark*
+*Copyright (c)  2022 -- Adam Clark*
 
 **"THE BEER-WARE LICENSE" (by Poul-Henning Kamp; Revision 42):**
 

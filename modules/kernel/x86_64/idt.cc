@@ -27,7 +27,8 @@
 /********************************************************************************************************************
 *   See `arch.h` for documentation
 *///-----------------------------------------------------------------------------------------------------------------
-extern "C" void IdtSetHandler(int i, uint16_t sel, Addr_t handler, int ist, int dpl)
+KRN_FUNC
+void IdtSetHandler(int i, uint16_t sel, Addr_t handler, int ist, int dpl)
 {
     IdtDescriptor_t desc;
     extern IdtDescriptor_t idtFinal[256];

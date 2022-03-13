@@ -2,7 +2,7 @@
 ##
 ##  Tupfile -- An alternative to 'make` build system -- build the object files for the arm architecture
 ##
-##        Copyright (c)  2017-2022 -- Adam Clark
+##        Copyright (c)  2022 -- Adam Clark
 ##        Licensed under "THE BEER-WARE LICENSE"
 ##        See License.md for details.
 ##
@@ -20,7 +20,7 @@
 ##    ---------------------------------------------------------------------------
 AS = nasm
 CC = clang
-LD = ld.lld
+LD = ld.lld --orphan-handling=error
 
 
 

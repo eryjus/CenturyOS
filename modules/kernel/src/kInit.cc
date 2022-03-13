@@ -21,6 +21,7 @@
 
 
 
+#include "arch.h"
 #include "internals.h"
 #include "cpu.h"
 
@@ -28,9 +29,9 @@
 /********************************************************************************************************************
 *   See `internals.h` for documentation
 *///-----------------------------------------------------------------------------------------------------------------
-extern "C" void EarlyInit(void)
+EXTERNC void EarlyInit(void)
 {
-    CpuInit();
+    BpCpuInit();
     ArchEarlyInit();
 }
 
@@ -44,11 +45,36 @@ extern "C" void EarlyInit(void)
 *
 *   @note               This function does not return.
 *///-----------------------------------------------------------------------------------------------------------------
-extern "C" __attribute__((noreturn)) void kInit(void)
+EXTERNC NORETURN
+void kInit(void)
 {
     EarlyInit();
     DbgPrintf("Hello, World!\n");
 
+    PlatformDiscovery();
+
+    ApStart();
+
     while (true) {}
+}
+
+
+
+/********************************************************************************************************************
+*   See documentation in `arch.h`
+*///-----------------------------------------------------------------------------------------------------------------
+KRN_FUNC NORETURN
+void kInitAp(void)
+{
+    ArchApInit();
+
+    DbgPrintf("Hello, World from CPU%d\n", LapicGetId());
+    cpus[LapicGetId()].status = CPU_FENCED;
+
+    // -- Hold this CPU here until it is released to start scheduling
+    while (cpus[LapicGetId()].status == CPU_FENCED) {}
+
+    // -- Currently will never get here
+    while (true){}
 }
 

@@ -36,6 +36,7 @@ include_rules
 ## -- Module-specific include files
 ##    -----------------------------
 CFLAGS += -I $(WS)/modules/$(MODULE)/inc
+CFLAGS += -I $(WS)/modules/$(MODULE)/pc
 
 
 

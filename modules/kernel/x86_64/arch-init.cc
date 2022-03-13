@@ -23,6 +23,10 @@
 
 #include "arch.h"
 #include "cpu.h"
+#include "mmu.h"
+#include "pmm.h"
+#include "internals.h"
+
 
 
 /****************************************************************************************************************//**
@@ -44,6 +48,7 @@
     | (uint64_t)0 << 55                                         \
     | (((uint64_t)(locn) >> 24) & 0xff) << 56                   \
 )
+
 
 
 /****************************************************************************************************************//**
@@ -83,7 +88,8 @@
 /********************************************************************************************************************
 *   See `arch.h` for documentation
 *///-----------------------------------------------------------------------------------------------------------------
-extern "C" void ArchEarlyInit(void)
+KRN_FUNC
+void ArchEarlyInit(void)
 {
     extern uint64_t gdtFinal[];
 
@@ -135,6 +141,81 @@ extern "C" void ArchEarlyInit(void)
     WRMSR(IA32_KERNEL_GS_BASE, (Addr_t)&(cpus[0].cpu));
     SWAPGS();
 
+    LapicInit();
+}
+
+
+
+/********************************************************************************************************************
+*   See `arch.h` for documentation
+*///-----------------------------------------------------------------------------------------------------------------
+KRN_FUNC
+void ArchApInit(void)
+{
+    extern uint64_t gdtFinal[];
+    int apicId = LapicGetId();
+
+
+    //
+    // -- Now, we need to establish the `gs` segment and the tss for this CPU
+    //    -------------------------------------------------------------------
+    gdtFinal[(0x98>>3) + (apicId * 3)] = GS_GDT(&cpus[apicId]);
+    WRMSR(IA32_KERNEL_GS_BASE, (Addr_t)&(cpus[apicId].cpu));
+    SWAPGS();
+
+    gdtFinal[(0xa0>>3) + (apicId * 3)] = TSSL32_GDT((Addr_t)&cpus[apicId].arch.tss);
+    gdtFinal[(0xa8>>3) + (apicId * 3)] = TSSU32_GDT((Addr_t)&cpus[apicId].arch.tss);
+    LTR(0xa0 + ((apicId * 3) << 3));
+
+    LapicInit();
+}
+
+
+
+/********************************************************************************************************************
+*   See `arch.h` for documentation
+*///-----------------------------------------------------------------------------------------------------------------
+KRN_FUNC
+void MoveTrampoline(void)
+{
+    if (cpuCount == 1) return;
+    Addr_t stackBase = 0xffffc00000000000;
+
+    struct Tramp_t {
+        uint64_t jumpCode;
+        uint32_t apLock;
+        uint32_t apPml4;
+        uint64_t stack;
+        uint64_t entryPoint;
+    } __attribute__((packed)) *tramp = (struct Tramp_t *)TRAMP_OFF;
+
+    extern uint8_t _smpStart[];
+    extern uint8_t _smpEnd[];
+    extern Addr_t pml4;
+
+    MapPage(TRAMP_OFF, TRAMP_OFF >> 12, PG_KRN | PG_WRT);
+    kMemMove(tramp, _smpStart, _smpEnd - _smpStart);
+
+    for (int i = 1; i < cpuCount; i ++) {
+        cpus[i].status = CPU_STARTING;
+
+        tramp->apLock = 0;
+        tramp->apPml4 = pml4;
+        tramp->stack = stackBase - (0x5000 * i);    // includes a guard page
+        tramp->entryPoint = (Addr_t)kInitAp;
+
+        // -- map the stack for the new CPU
+        for (Addr_t s = tramp->stack - 0x4000; s < tramp->stack; s += 0x1000) {
+            MapPage(s, PmmAllocate(), PG_KRN | PG_WRT);
+        }
+
+        LapicSendInit(i);
+        LapicSendSipi(i, TRAMP_OFF);
+
+        while (cpus[i].status == CPU_STARTING) {
+            // -- TODO: check for timeout and fail CPU Startup
+        }
+    }
 }
 
 

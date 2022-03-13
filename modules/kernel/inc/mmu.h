@@ -20,12 +20,13 @@
 *///=================================================================================================================
 
 
+
 #ifndef __MMU_H__
 #define __MMU_H__
 
 
-#include "arch.h"
 
+#include "arch.h"
 
 
 
@@ -37,7 +38,9 @@
 *   @param              f                   The frame to which to map the page
 *   @param              flags               Flags which will help control the mapping security
 *///-----------------------------------------------------------------------------------------------------------------
-extern "C" void MapPage(Addr_t a, Frame_t f, int flags);
+KRN_FUNC
+void MapPage(Addr_t a, Frame_t f, int flags);
+
 
 
 #endif

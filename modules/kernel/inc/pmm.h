@@ -36,7 +36,8 @@
 *
 *   @returns            A frame number which has now been allocated to the requestor.
 *///-----------------------------------------------------------------------------------------------------------------
-extern "C" Frame_t PmmAllocate(void);
+KRN_FUNC
+Frame_t PmmAllocate(void);
 
 
 #endif

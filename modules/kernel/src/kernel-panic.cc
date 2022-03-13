@@ -28,7 +28,8 @@
 /********************************************************************************************************************
 *   See `internals.h` for documentation
 *///-----------------------------------------------------------------------------------------------------------------
-extern "C" __attribute__((noreturn)) void KernelPanic(const char *msg)
+KRN_FUNC NORETURN
+void KernelPanic(const char *msg)
 {
     DbgPrintf(ANSI_BG_RED ANSI_FG_WHITE ANSI_ATTR_BOLD ANSI_CLEAR ANSI_SET_CURSOR(0,0));
     DbgPrintf("─────[ %-35s ]────────────────────────────────────────────────────────────────\n", msg);

@@ -32,12 +32,19 @@
 
     extern      kInit
     extern      SerialOpen
+    extern      roStart
+    extern      kernelEnd
+    extern      _bssEnd
+    extern      _bssStart
 
 
     global      entry
     global      earlyFrame
     global      gdtFinal
     global      idtFinal
+    global      gdtrFinal
+    global      idtrFinal
+    global      pml4
 
 
     section     .mboot
@@ -165,11 +172,11 @@ gdt64:
     dq          0x00a0920000000000              ;; GDT entry 0x10 (KERNEL DATA)
 gdt64End:
 
-gdtr64:                                             ;; this is the GDT to jump into long mode
+gdtr64:                                         ;; this is the GDT to jump into long mode
     dw          gdt64End-gdt64-1
     dd          gdt64
 
-idtr64:                                             ;; this is the GDT to jump into long mode
+idtr64:                                         ;; this is the GDT to jump into long mode
     dw          (256*16)-1
     dd          0
 
@@ -210,33 +217,39 @@ entry:
 
 
 ;; -- we have the page table in eax; set the entry to be identity mapped (assume 1 page)
-    mov         edx,0x100103                    ;; the starting point for mapping
+    mov         edx,0x100000                    ;; the starting point for mapping
+    mov         ebp,0x100000
+    call        GetFlags
+    or          edx,ebx                         ;; merge the flags
     mov         ecx,0x800                       ;; Starting point to map pages
 
 .loop1:
     mov         [eax+ecx],edx                   ;; map the page: present, rw, global flags
     add         edx,0x1000                      ;; next frame
+    add         ebp,0x1000                      ;; next frame
+    call        GetFlags
+    or          edx,ebx
     add         ecx,8                           ;; next PTE
     cmp         ecx,0x1000                      ;; done?
     jne         .loop1
 
-    or          eax,0x103                       ;; set the flags for later
+    or          eax,0x03                        ;; set the flags for later
 
     mov         esi,[pd]                        ;; get the page directory and populate
     mov         [esi],eax
     mov         eax,esi                         ;; get ready to move up a level
-    or          eax,0x103                       ;; set the flags for later
+    or          eax,0x03                        ;; set the flags for later
 
     mov         esi,[pdpt]                      ;; get the pdpt and populate
     mov         [esi],eax
     mov         eax,esi                         ;; get ready to move up a level
-    or          eax,0x103                       ;; set the flags for later
+    or          eax,0x03                        ;; set the flags for later
 
     mov         esi,[pml4]                      ;; get the pml4 and populate
     mov         [esi],eax                       ;; identity mapped
     mov         [esi+0xc00],eax                 ;; upper memory location
     mov         eax,esi
-    or          eax,0x103                       ;; set up for recursive mapping
+    or          eax,0x03                        ;; set up for recursive mapping
     mov         [esi+0xff8],eax                 ;; recursively map the tables
 
 
@@ -254,7 +267,7 @@ entry:
 
     mov         edx,[tos]                       ;; map the future stack (4 pages)
     sub         edx,0x1000
-    or          edx,0x103
+    or          edx,0x03                        ;; we know we are mapping the stack; must be read/write
 
     mov         [eax+PT_ENT+24],edx
     sub         edx,0x1000
@@ -267,17 +280,17 @@ entry:
 
     mov         [eax+PT_ENT+0 ],edx
 
-    or          eax,0x103                       ;; set the flags for later
+    or          eax,0x03                        ;; set the flags for later
 
     mov         esi,[pd]                        ;; get the page directory and populate
     mov         [esi+PD_ENT],eax
     mov         eax,esi                         ;; get ready to move up a level
-    or          eax,0x103                       ;; set the flags for later
+    or          eax,0x03                        ;; set the flags for later
 
     mov         esi,[pdpt]                      ;; get the pdpt and populate
     mov         [esi+PDPT_ENT],eax
     mov         eax,esi                         ;; get ready to move up a level
-    or          eax,0x103                       ;; set the flags for later
+    or          eax,0x03                        ;; set the flags for later
 
     mov         esi,[pml4]                      ;; get the pml4 and populate
     mov         [esi+PML4_ENT],eax
@@ -346,6 +359,40 @@ NewFrame:
     ret
 
 
+
+;;
+;; -- Get the page flags for a kernel address
+;;
+;;    parameters:
+;;    * ebp -- the lower 16-bits of the address to map (the upper 16
+;;             bits are assumed to be `0xffffc000`); this register is
+;;             preserved
+;;
+;;    returns:
+;;    * ebx -- the flags to apply to the page given the address
+;;
+;;    all other registers are preserved
+;;    --------------------------------------------------------------------
+GetFlags:
+    push        eax
+    push        edx
+
+    mov         ebx,0x01
+
+    mov         eax,[kernelEnd]
+    cmp         ebp,eax
+    jb         .exit
+
+    or          ebx,0x02
+
+.exit:
+    pop         edx
+    pop         eax
+    ret
+
+
+
+
 ;;===================================================================================================================
 ;;===================================================================================================================
 ;;===================================================================================================================
@@ -406,9 +453,9 @@ idtFinalEnd:
 gdtFinal:
     dq          0                               ;; GDT entry 0x00 (NULL)
     dq          0x00a09a0000000000              ;; GDT entry 0x08 (KERNEL CODE)
-    dq          0x00a0920000000000              ;; GDT entry 0x10 (KERNEL DATA)
+    dq          0x00a0920000000000              ;; GDT entry 0x10 (KERNEL STACK)
     dq          0x00cffa000000ffff              ;; GDT entry 0x18 (USER CODE)
-    dq          0x00cff2000000ffff              ;; GDT entry 0x20 (USER DATA)
+    dq          0x00cff2000000ffff              ;; GDT entry 0x20 (USER STACK)
     dq          0x00a0920000000000              ;; GDT entry 0x28 (KERNEL DATA)
     dq          0x00cff2000000ffff              ;; GDT entry 0x30 (USER DATA)
     dq          0                               ;; GDT entry 0x38 (Future Use)
@@ -492,10 +539,25 @@ HigherHalf:
 ;;    -------------------------
 .realGdt:
     mov         rax,0x10
+    mov         ss,ax
+
+    mov         rax,0x28
     mov         ds,ax
     mov         es,ax
+
+    mov         rax,0x0
     mov         fs,ax
     mov         gs,ax
+
+    mov         rcx,_bssEnd
+    mov         rdi,_bssStart
+    xor         rax,rax
+    cld
+
+    sub         rcx,rdi
+    shr         rcx,3
+
+    rep         stosq
 
     call        SerialOpen
 
