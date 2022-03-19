@@ -543,6 +543,17 @@ void OUTB(uint16_t port, uint8_t val) {
 
 
 /****************************************************************************************************************//**
+*   @fn                 void EnableInterrupts(void)
+*   @brief              Enable Interrupts explicitly
+*///-----------------------------------------------------------------------------------------------------------------
+INLINE
+void EnableInterrupts(void) {
+    __asm volatile("sti" ::: "memory");
+}
+
+
+
+/****************************************************************************************************************//**
 *   @fn                 void SWAPGS(void)
 *   @brief              Swap the `gs` register with the IA32_KERNEL_GS_BASE model-specific register (setting limits)
 *///-----------------------------------------------------------------------------------------------------------------
@@ -853,6 +864,15 @@ void int1f(void);
 
 
 /****************************************************************************************************************//**
+*   @fn                 void int20(void)
+*   @brief              Timer IRQ Interrupt
+*///-----------------------------------------------------------------------------------------------------------------
+LZONE_FUNC
+void int20(void);
+
+
+
+/****************************************************************************************************************//**
 *   @fn                 void intxx(void)
 *   @brief              Generically handle any other IRQ or software generated interrupt
 *
@@ -1029,6 +1049,32 @@ void PlatformDiscovery(void);
 *   @brief              Macro to toggle instrumentation in Bochs; will have no impact on anything else
 *///-----------------------------------------------------------------------------------------------------------------
 #define BOCHS_INSTRUMENTATION __asm volatile("xchg %edx,%edx");
+
+
+
+/****************************************************************************************************************//**
+*   @fn                 BOCHS_BREAK
+*   @brief              Macro to set a breakpoint for Bochs; will have no impact on anything else
+*///-----------------------------------------------------------------------------------------------------------------
+#define BOCHS_BREAK __asm volatile("xchg %bx,%bx");
+
+
+
+
+#include "cpu.h"
+
+
+
+/****************************************************************************************************************//**
+*   @fn                 int ThisCpuNum(void)
+*   @brief              This this cpu's number
+*///-----------------------------------------------------------------------------------------------------------------
+INLINE
+int ThisCpuNum(void) {
+    Cpu_t *c;
+    __asm volatile("mov %%gs:(8),%0" : "=r"(c) :: "memory");
+    return c->cpuNumber;
+}
 
 
 

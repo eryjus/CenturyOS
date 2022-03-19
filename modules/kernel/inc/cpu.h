@@ -37,6 +37,8 @@ enum {
     CPU_STARTING = 3,               //!< The CPU is attempting to start, but has not yet reached a known good state
     CPU_IDLE = 4,                   //!< The CPU is idle and may be powered off
     CPU_OFF = 5,                    //!< The CPU is powered off to save energy
+    CPU_EXCEPTION = 6,              //!< The CPU is handling an interrupt/exception
+    CPU_SERVICE = 7,                //!< The CPU is handling an OS Service Routine
 };
 
 
@@ -56,8 +58,14 @@ typedef struct Cpu_t {
     bool isBP;                                  //!< Is this the boot processor?
     volatile bool fenced;                       //!< Has this CPU been fenced and held?
     volatile int status;                        //!< The current CPU Status
+    volatile int prevStatus;                    //!< The previous status when status is CPU_EXCEPTION or CPU_SERVICE
     ArchCpu_t arch;                             //!< Architecture-specific data elements
 } Cpu_t;
+
+static_assert(__builtin_offsetof(Cpu_t, status) == 24,
+        "The offset of the Cpu_t::status member is not aligned with .s code");
+static_assert(__builtin_offsetof(Cpu_t, prevStatus) == 28,
+        "The offset of the Cpu_t::prevStatus member is not aligned with .s code");
 
 
 

@@ -21,6 +21,8 @@
 
 
 
+#include "arch.h"
+#include "cpu.h"
 #include "internals.h"
 
 
@@ -31,8 +33,22 @@
 KRN_FUNC NORETURN
 void KernelPanic(const char *msg)
 {
+    static const char *contextDesc[] = {
+        "CPU_NONE",
+        "CPU_RUNNING",
+        "CPU_FENCED",
+        "CPU_STARTING",
+        "CPU_IDLE",
+        "CPU_OFF",
+        "CPU_EXCEPTION",
+        "CPU_SERVICE",
+    };
+
+    int context = cpus[ThisCpuNum()].status;
+
     DbgPrintf(ANSI_BG_RED ANSI_FG_WHITE ANSI_ATTR_BOLD ANSI_CLEAR ANSI_SET_CURSOR(0,0));
     DbgPrintf("─────[ %-35s ]────────────────────────────────────────────────────────────────\n", msg);
+    DbgPrintf("  The current cpu context is %s (%d)\n", contextDesc[context], context);
 
     DbgPrintf(ANSI_ATTR_NORMAL);
 

@@ -55,6 +55,8 @@ void kInit(void)
 
     ApStart();
 
+    EnableInterrupts();
+
     while (true) {}
 }
 
@@ -70,6 +72,8 @@ void kInitAp(void)
 
     DbgPrintf("Hello, World from CPU%d\n", LapicGetId());
     cpus[LapicGetId()].status = CPU_FENCED;
+
+    EnableInterrupts();
 
     // -- Hold this CPU here until it is released to start scheduling
     while (cpus[LapicGetId()].status == CPU_FENCED) {}

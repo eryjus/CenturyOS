@@ -472,22 +472,22 @@ gdtFinal:
     dq          0                               ;; GDT entry 0x90 (Future Use)
 
     ;; -- CPU0
-    dq          0                               ;; GDT entry 0x98 (reserved: gs: for CPU0)
+    dq          0x00a0920000000000              ;; GDT entry 0x98 (gs: for CPU0)
     dq          0                               ;; GDT entry 0xa0 (reserved: Upper TSS for CPU0)
     dq          0                               ;; GDT entry 0xa8 (reserved: Lower TSS for CPU0)
 
     ;; -- CPU1
-    dq          0                               ;; GDT entry 0xb0 (reserved: gs: for CPU1)
+    dq          0x00a0920000000000              ;; GDT entry 0xb0 (gs: for CPU1)
     dq          0                               ;; GDT entry 0xb8 (reserved: Upper TSS for CPU1)
     dq          0                               ;; GDT entry 0xc0 (reserved: Lower TSS for CPU1)
 
     ;; -- CPU2
-    dq          0                               ;; GDT entry 0xc8 (reserved: gs: for CPU2)
+    dq          0x00a0920000000000              ;; GDT entry 0xc8 (gs: for CPU2)
     dq          0                               ;; GDT entry 0xd0 (reserved: Upper TSS for CPU2)
     dq          0                               ;; GDT entry 0xd8 (reserved: Lower TSS for CPU2)
 
     ;; -- CPU3
-    dq          0                               ;; GDT entry 0xe0 (reserved: gs: for CPU3)
+    dq          0x00a0920000000000              ;; GDT entry 0xe0 (gs: for CPU3)
     dq          0                               ;; GDT entry 0xe8 (reserved: Upper TSS for CPU3)
     dq          0                               ;; GDT entry 0xf0 (reserved: Lower TSS for CPU3)
 gdtFinalEnd:

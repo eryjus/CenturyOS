@@ -62,29 +62,6 @@
 
 
 
-/****************************************************************************************************************//**
-*   @def                GS_GDT
-*   @brief              A helper macro to define a segment selector specific to the per-cpu data for a given CPU
-*///-----------------------------------------------------------------------------------------------------------------
-#define GS_GDT(locn)        (                                   \
-      ((uint64_t)0x000f) << 0                                   \
-    | ((uint64_t)(locn) & 0xffff) << 16                         \
-    | (((uint64_t)(locn) >> 16) & 0xff) << 32                   \
-    | (uint64_t)0x02 << 40                                      \
-    | (uint64_t)1 << 44                                         \
-    | (uint64_t)3 << 45                                         \
-    | (uint64_t)1 << 47                                         \
-    | (uint64_t)0 << 48                                         \
-    | (uint64_t)0 << 52                                         \
-    | (uint64_t)1 << 53                                         \
-    | (uint64_t)1 << 54                                         \
-    | (uint64_t)1 << 55                                         \
-    | (((uint64_t)(locn) >> 24) & 0xff) << 56                   \
-)
-
-
-
-
 /********************************************************************************************************************
 *   See `arch.h` for documentation
 *///-----------------------------------------------------------------------------------------------------------------
@@ -130,6 +107,10 @@ void ArchEarlyInit(void)
         IdtSetHandler(i, 0x08, (Addr_t)intxx, 0, 0);
     }
 
+
+    // -- go back and install the problem IRQ handlers
+    IdtSetHandler(32, 0x08, (Addr_t)int20, 0, 0);
+
     //
     // -- Now, we need to establish the `gs` segment and the tss for this CPU
     //    -------------------------------------------------------------------
@@ -137,8 +118,9 @@ void ArchEarlyInit(void)
     gdtFinal[0xa8>>3] = TSSU32_GDT((Addr_t)&cpus[0].arch.tss);
     LTR(0xa0);
 
-    gdtFinal[0x98>>3] = GS_GDT(&cpus[0]);
-    WRMSR(IA32_KERNEL_GS_BASE, (Addr_t)&(cpus[0].cpu));
+    asm __volatile ("mov %0,%%gs" :: "r"(0x98) : "memory");
+    WRMSR(IA32_GS_BASE, 0);
+    WRMSR(IA32_KERNEL_GS_BASE, (Addr_t)cpus[0].cpu);
     SWAPGS();
 
     LapicInit();
@@ -159,8 +141,9 @@ void ArchApInit(void)
     //
     // -- Now, we need to establish the `gs` segment and the tss for this CPU
     //    -------------------------------------------------------------------
-    gdtFinal[(0x98>>3) + (apicId * 3)] = GS_GDT(&cpus[apicId]);
-    WRMSR(IA32_KERNEL_GS_BASE, (Addr_t)&(cpus[apicId].cpu));
+    asm __volatile ("mov %0,%%gs" :: "r"(0x98 + (apicId * 24)) : "memory");
+    WRMSR(IA32_GS_BASE, 0);
+    WRMSR(IA32_KERNEL_GS_BASE, (Addr_t)cpus[apicId].cpu);
     SWAPGS();
 
     gdtFinal[(0xa0>>3) + (apicId * 3)] = TSSL32_GDT((Addr_t)&cpus[apicId].arch.tss);

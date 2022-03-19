@@ -592,7 +592,7 @@ void LapicInit(void)
         OUTB(0x61, tmp | 1);
 
         // -- reset the APIC counter to -1
-        apicOps.writeApicRegister(APIC_TIMER_CCR, 0xffffffff);
+        apicOps.writeApicRegister(APIC_TIMER_ICR, 0xffffffff);
 
         while (!(INB(0x61) & 0x20)) {}  // -- busy wait here
 
